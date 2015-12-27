@@ -95,7 +95,7 @@ List<String> Reactor_status() {
 
             // Check reactor inventory
             List<IMyInventoryItem> items = r.GetInventory(0).GetItems();
-            foreach(int j=0;j<items.Count;j++) {
+            for(int j=0;j<items.Count;j++) {
                 // Let's assume there is nothing other than uranium in the reactor
                 total_u += items[j].Amount.RawValue;
             }
@@ -112,7 +112,7 @@ List<String> Reactor_status() {
 
 List<String> Battery_status() {
     List<IMyTerminalBlock> batteries = new List<IMyTerminalBlock>();
-    GridTerminalSystem.GetBlocksOfType<IMyBattery>(batteries);
+    GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(batteries);
 
     System.Text.RegularExpressions.Regex battRegex = new System.Text.RegularExpressions.Regex(
         "Current Input: (\\d+\\.?\\d*) (\\w?)W.*Current Output: (\\d+\\.?\\d*) (\\w?)W.*Stored power: (\\d+\\.?\\d*) (\\w?)Wh",
