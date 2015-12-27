@@ -62,16 +62,13 @@ List<String> Solar_status() {
 List<String> Reactor_status() {
     List<IMyTerminalBlock> reactors = new List<IMyTerminalBlock>();
     GridTerminalSystem.GetBlocksOfType<IMyReactor>(reactors);
-    String info = "";
 
     System.Text.RegularExpressions.Regex outputRegex = new System.Text.RegularExpressions.Regex(
         "Max Output: (\\d+\\.?\\d*) (\\w?)W.*Current Output: (\\d+\\.?\\d*) (\\w?)W",
         System.Text.RegularExpressions.RegexOptions.Singleline);
 
-    double total_max = 0.0f;
-    double total_current = 0.0f;
-    int reactors_on = 0;
-    int reactors_off = 0;
+    double total_max = 0.0f, total_current = 0.0f, total_u = 0.0f;
+    int reactors_on = 0, reactors_off = 0;
 
     for(int i = 0;i<reactors.Count;i++) {
         // IMyFunctionalBlock has the Enabled property, which the IMyTerminalBlock doesn't
@@ -80,11 +77,8 @@ List<String> Reactor_status() {
             if(r.Enabled) {
                 reactors_on++;
 
-                info = r.DetailedInfo;
-                double currentOutput = 0.0f;
-                double maxOutput = 0.0f;
-                double parsedDouble;
-                System.Text.RegularExpressions.Match match = outputRegex.Match(info);
+                double currentOutput = 0.0f, maxOutput = 0.0f, parsedDouble;
+                System.Text.RegularExpressions.Match match = outputRegex.Match(r.DetailedInfo);
                 if(match.Success) {
                     if(Double.TryParse(match.Groups[1].Value, out parsedDouble)) {
                         maxOutput = parsedDouble * Math.Pow(1000.0, MULTIPLIERS.IndexOf(match.Groups[2].Value));
@@ -98,12 +92,20 @@ List<String> Reactor_status() {
             } else {
                 reactors_off++;
             }
+
+            // Check reactor inventory
+            items = r.GetInventory(0).GetItems();
+            foreach(j=0;j<items.Count;j++) {
+                // Let's assume there is nothing other than uranium in the reactor
+                total_u += items[j].Amount.RawValue;
+            }
         }
     }
 
     List<String> text = new List<String>();
     text.Add("Reactors: " + reactors_on + " on, " + reactors_off + " off");
     text.Add("Output: " + Format(total_current) + "W  (max: " + Format(total_max) + "W)");
+    text.Add("Remaining Uranium: " + Format(total_u) + "kg");
     text.Add("-----------------");
     return text;
 }
