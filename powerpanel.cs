@@ -94,8 +94,8 @@ List<String> Reactor_status() {
             }
 
             // Check reactor inventory
-            items = r.GetInventory(0).GetItems();
-            foreach(j=0;j<items.Count;j++) {
+            List<IMyInventoryItem> items = r.GetInventory(0).GetItems();
+            foreach(int j=0;j<items.Count;j++) {
                 // Let's assume there is nothing other than uranium in the reactor
                 total_u += items[j].Amount.RawValue;
             }
