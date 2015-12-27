@@ -57,7 +57,7 @@ void Main(string argument)
     UpdateLCDs(String.Join("\n", text.ToArray()));
 }
 
-void UpdateLCDs(String string) {
+void UpdateLCDs(String s) {
     // Find LCDs and update them
     List<IMyTerminalBlock> lcds = new List<IMyTerminalBlock>(); 
     GridTerminalSystem.SearchBlocksOfName(LCD_NAME, lcds);
@@ -65,7 +65,7 @@ void UpdateLCDs(String string) {
     for (int i = 0;i<lcds.Count;i++) {
         if(lcds[i] is IMyTextPanel) {
             panel = (IMyTextPanel)lcds[i];
-            panel.WritePublicText(string, false);
+            panel.WritePublicText(s, false);
             panel.ShowPublicTextOnScreen();
         }
     }
