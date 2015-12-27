@@ -59,8 +59,7 @@ List<String> Solar_status() {
 }
 
 List<String> Reactor_status() {
-    // IMyFunctionalBlock has the Enabled property, which the IMyTerminalBlock doesn't
-    List<IMyFunctionalBlock> reactors = new List<IMyFunctionalBlock>();
+    List<IMyTerminalBlock> reactors = new List<IMyTerminalBlock>();
     GridTerminalSystem.GetBlocksOfType<IMyReactor>(reactors);
     String info = "";
 
@@ -74,26 +73,30 @@ List<String> Reactor_status() {
     int reactors_off = 0;
 
     for(int i = 0;i<reactors.Count;i++) {
-        if(reactors[i].Enabled) {
-            reactors_on++;
+        // IMyFunctionalBlock has the Enabled property, which the IMyTerminalBlock doesn't
+        if(reactors[i] is IMyFunctionalBlock) {
+            IMyFunctionalBlock r = reactors[i] as IMyFunctionalBlock;
+            if(r.Enabled) {
+                reactors_on++;
 
-            info = reactors[i].DetailedInfo;
-            double currentOutput = 0.0f;
-            double maxOutput = 0.0f;
-            double parsedDouble;
-            System.Text.RegularExpressions.Match match = outputRegex.Match(info);
-            if(match.Success) {
-                if(Double.TryParse(match.Groups[1].Value, out parsedDouble)) {
-                    maxOutput = parsedDouble * Math.Pow(1000.0, MULTIPLIERS.IndexOf(match.Groups[2].Value));
+                info = r.DetailedInfo;
+                double currentOutput = 0.0f;
+                double maxOutput = 0.0f;
+                double parsedDouble;
+                System.Text.RegularExpressions.Match match = outputRegex.Match(info);
+                if(match.Success) {
+                    if(Double.TryParse(match.Groups[1].Value, out parsedDouble)) {
+                        maxOutput = parsedDouble * Math.Pow(1000.0, MULTIPLIERS.IndexOf(match.Groups[2].Value));
+                    }
+                    if(Double.TryParse(match.Groups[3].Value, out parsedDouble)) {
+                        currentOutput = parsedDouble * Math.Pow(1000.0, MULTIPLIERS.IndexOf(match.Groups[4].Value));
+                    }
                 }
-                if(Double.TryParse(match.Groups[3].Value, out parsedDouble)) {
-                    currentOutput = parsedDouble * Math.Pow(1000.0, MULTIPLIERS.IndexOf(match.Groups[4].Value));
-                }
+                total_max += maxOutput;
+                total_current += currentOutput;
+            } else {
+                reactors_off++;
             }
-            total_max += maxOutput;
-            total_current += currentOutput;
-        } else {
-            reactors_off++;
         }
     }
 
