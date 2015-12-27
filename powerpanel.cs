@@ -96,8 +96,9 @@ List<String> Reactor_status() {
             // Check reactor inventory
             List<IMyInventoryItem> items = r.GetInventory(0).GetItems();
             for(int j=0;j<items.Count;j++) {
-                // Let's assume there is nothing other than uranium in the reactor
-                total_u += items[j].Amount.RawValue;
+                if(items[j].Content.SubtypeName == "Uranium") {
+                    total_u += items[j].Amount.RawValue/1000;
+                }
             }
         }
     }
@@ -105,7 +106,7 @@ List<String> Reactor_status() {
     List<String> text = new List<String>();
     text.Add("Reactors: " + reactors_on + " on, " + reactors_off + " off");
     text.Add("Output: " + Format(total_current) + "W  (max: " + Format(total_max) + "W)");
-    text.Add("Remaining Uranium: " + Format(total_u) + "kg");
+    text.Add("Remaining Uranium: " + Format(total_u) + "g");
     text.Add("-----------------");
     return text;
 }
