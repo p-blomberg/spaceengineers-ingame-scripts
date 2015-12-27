@@ -8,6 +8,7 @@ void Main(string argument)
     text.Add("-----------------");
     text.AddRange(Solar_status());
     text.AddRange(Reactor_status());
+    text.AddRange(Battery_status());
 
     UpdateLCDs(String.Join("\n", text.ToArray()));
 }
@@ -106,6 +107,55 @@ List<String> Reactor_status() {
     text.Add("-----------------");
     return text;
 }
+
+List<String> Battery_status() {
+    List<IMyTerminalBlock> batteries = new List<IMyTerminalBlock>();
+    GridTerminalSystem.GetBlocksOfType<IMyBattery>(batteries);
+
+    System.Text.RegularExpressions.Regex battRegex = new System.Text.RegularExpressions.Regex(
+        "Current Input: (\\d+\\.?\\d*) (\\w?)W.*Current Output: (\\d+\\.?\\d*) (\\w?)W.*Stored power: (\\d+\\.?\\d*) (\\w?)Wh",
+        System.Text.RegularExpressions.RegexOptions.Singleline);
+
+    double total_input = 0.0f, total_output = 0.0f, total_stored = 0.0f;
+    int on = 0, off = 0;
+
+    for(int i = 0;i<batteries.Count;i++) {
+        if(batteries[i] is IMyFunctionalBlock) {
+            IMyFunctionalBlock b = batteries[i] as IMyFunctionalBlock;
+            if(b.Enabled) {
+                on++;
+            } else {
+                off++;
+            }
+
+            double input = 0.0f, output = 0.0f, stored = 0.0f, parsedDouble;
+            System.Text.RegularExpressions.Match match = battRegex.Match(b.DetailedInfo);
+            if(match.Success) {
+                if(Double.TryParse(match.Groups[1].Value, out parsedDouble)) {
+                    input = parsedDouble * Math.Pow(1000.0, MULTIPLIERS.IndexOf(match.Groups[2].Value));
+                }
+                if(Double.TryParse(match.Groups[3].Value, out parsedDouble)) {
+                    output = parsedDouble * Math.Pow(1000.0, MULTIPLIERS.IndexOf(match.Groups[4].Value));
+                }
+                if(Double.TryParse(match.Groups[5].Value, out parsedDouble)) {
+                    stored = parsedDouble * Math.Pow(1000.0, MULTIPLIERS.IndexOf(match.Groups[6].Value));
+                }
+            }
+            total_input += input;
+            total_output += output;
+            total_stored += stored;
+        }
+    }
+
+    List<String> text = new List<String>();
+    text.Add("Batteries: " + on + " on, " + off + " off");
+    text.Add("Input: " + Format(total_input) + "W");
+    text.Add("Output: " + Format(total_output) + "W");
+    text.Add("Stored power: " + Format(total_stored) + "Wh");
+    text.Add("-----------------");
+    return text;
+}
+
 
 void UpdateLCDs(String s) {
     // Find LCDs and update them
