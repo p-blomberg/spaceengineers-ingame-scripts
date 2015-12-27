@@ -1,6 +1,16 @@
 const String LCD_NAME = "Power Panel";
 const String MULTIPLIERS = ".kMGTPEZY";
 
+void Main(string argument)
+{
+    List<String> text = new List<String>();
+    text.Add("Updated: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+    text.Add("-----------------");
+    text.AddRange(Solar_status());
+
+    UpdateLCDs(String.Join("\n", text.ToArray()));
+}
+
 List<String> Solar_status() {
     // Find solar panels. Sum their output.
     List<IMyTerminalBlock> solars = new List<IMyTerminalBlock>(); 
@@ -45,16 +55,6 @@ List<String> Solar_status() {
     text.Add("-----------------");
     
     return text;
-}
-
-void Main(string argument)
-{
-    List<String> text = new List<String>();
-    text.Add("Updated: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-    text.Add("-----------------");
-    text.AddRange(Solar_status());
-
-    UpdateLCDs(String.Join("\n", text.ToArray()));
 }
 
 void UpdateLCDs(String s) {
